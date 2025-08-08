@@ -1,14 +1,11 @@
-required_packages <- c(
-  "deSolve", "tictoc", "openxlsx", "ggplot2",
-  "dplyr", "pracma", "readxl", "tidyr"
-)
-missing_pkgs <- required_packages[!sapply(required_packages, requireNamespace, quietly = TRUE)]
-if (length(missing_pkgs) > 0) {
-  stop("Missing required packages: ", paste(missing_pkgs, collapse = ", "))
-}
-
-lapply(required_packages, library, character.only = TRUE)
-tic()
+library(deSolve)
+library(tictoc)
+library(openxlsx)
+library(ggplot2)
+library(dplyr)
+library(pracma)
+library(readxl)
+library(tidyr)
 
 # Allow PFAS to be selected at runtime (default PFBS)
 args <- commandArgs(trailingOnly = TRUE)
@@ -16,6 +13,7 @@ pfas <- if (length(args) > 0) args[1] else "PFBS"
 script_args <- commandArgs(trailingOnly = FALSE)
 script_path <- sub("^--file=", "", script_args[grep("^--file=", script_args)])
 script_dir <- if (length(script_path) > 0) dirname(script_path) else "."
+
 params <- read.csv(file.path(script_dir, "pfas_parameters.csv"), stringsAsFactors = FALSE)
 pfas_params <- subset(params, PFAS == pfas)
 if (nrow(pfas_params) == 0) {
@@ -562,4 +560,5 @@ concentration_over_time <- data.frame(
 
 # Write this data to a new sheet in the Excel file
 write.xlsx(list(Simulation_Results = results.final, Summary_Metrics = summary_metrics, Tissue_Concentrations_Over_Time = concentration_over_time), "results.xlsx")
+
 toc()
