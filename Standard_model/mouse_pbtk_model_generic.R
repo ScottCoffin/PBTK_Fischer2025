@@ -6,7 +6,6 @@ library(dplyr)
 library(pracma)
 library(readxl)
 library(tidyr)
-tic()
 
 # Allow PFAS to be selected at runtime (default PFBS)
 args <- commandArgs(trailingOnly = TRUE)
@@ -14,8 +13,12 @@ pfas <- if (length(args) > 0) args[1] else "PFBS"
 script_args <- commandArgs(trailingOnly = FALSE)
 script_path <- sub("^--file=", "", script_args[grep("^--file=", script_args)])
 script_dir <- if (length(script_path) > 0) dirname(script_path) else "."
-params <- read.csv(file.path(script_dir, "pfas_parameters.csv"))
+
+params <- read.csv(file.path(script_dir, "pfas_parameters.csv"), stringsAsFactors = FALSE)
 pfas_params <- subset(params, PFAS == pfas)
+if (nrow(pfas_params) == 0) {
+  stop("PFAS " , pfas, " not found in parameter table")
+}
 
 # Chemical descriptors retrieved from parameter table
 P_app        <- pfas_params$P_app
@@ -557,4 +560,5 @@ concentration_over_time <- data.frame(
 
 # Write this data to a new sheet in the Excel file
 write.xlsx(list(Simulation_Results = results.final, Summary_Metrics = summary_metrics, Tissue_Concentrations_Over_Time = concentration_over_time), "results.xlsx")
+
 toc()
